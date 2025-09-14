@@ -23,16 +23,16 @@ Each project is **self-contained** and can be run independently.
 
 1. Clone the repo
    ```bash
-   git clone https://github.com/<your-username>/java-mini-projects.git
-   cd java-mini-projects
+   git clone https://github.com/vivisn00b/Java-Mini-Projects.git
+   cd Java-Mini-Projects
    ```
 2. Navigate to the project folder you want to run (example: Smart Library System):
    ```bash
-   cd smartlibrary
+   cd smartlibrarysystem
    ```
 3. Compile the source code
    ```bash
-   javac -d out src/**/*.java
+   javac -d out src/smartlibrary/*.java
    ```
 
 4. Run the program
