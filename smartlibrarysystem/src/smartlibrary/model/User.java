@@ -1,6 +1,7 @@
 package smartlibrary.model;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public abstract class User {
@@ -13,15 +14,16 @@ public abstract class User {
     protected String password; // For authentication
     protected double finesDue; // Total fines due
     protected int maxBooksAllowed; // Maximum books allowed to borrow
-    protected int booksCurrentlyBorrowed; // Number of books currently borrowed
-    protected List<String> borrowedBooks = new ArrayList<>(); // List of borrowed book IDs
-    protected List<String> reservedBooks = new ArrayList<>(); // List of reserved book IDs
+    protected List<Loan> borrowedBooks = new ArrayList<>();
+    protected List<String> reservedBooks = new ArrayList<>();
 
-
-    public abstract double payFine();
+    // Abstract methods → subclasses must implement
+    public abstract double calculateFine(Loan loan);
+    public abstract double payFine(double amount);
     public abstract void showUserDetails();
 
-    public User(String id, String name, String email, String phoneNumber, String address, String membershipStatus, String password, double finesDue, int maxBooksAllowed, int booksCurrentlyBorrowed) {
+    public User(String id, String name, String email, String phoneNumber, String address,
+                String membershipStatus, String password, int maxBooksAllowed) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -29,16 +31,14 @@ public abstract class User {
         this.address = address;
         this.membershipStatus = membershipStatus;
         this.password = password;
-        this.finesDue = finesDue;
         this.maxBooksAllowed = maxBooksAllowed;
-        this.booksCurrentlyBorrowed = booksCurrentlyBorrowed;
+        this.finesDue = 0.0;
     }
 
-    public boolean borrowBook(String bookId) {
-        if (booksCurrentlyBorrowed < maxBooksAllowed) {
-            borrowedBooks.add(bookId);
-            booksCurrentlyBorrowed++;
-            System.out.println("Book " + bookId + " successfully borrowed by user " + id);
+    public boolean borrowBook(Loan loan) {
+        if (borrowedBooks.size() < maxBooksAllowed) {
+            borrowedBooks.add(loan);
+            System.out.println("Book " + loan.getBookId() + " successfully borrowed by user " + id);
             return true;
         }
         System.out.println("User " + id + " has reached the maximum limit of borrowed books.");
@@ -46,10 +46,14 @@ public abstract class User {
     }
 
     public boolean returnBook(String bookId) {
-        if(borrowedBooks.remove(bookId)) {
-            booksCurrentlyBorrowed--;
-            System.out.println("Book " + bookId + " successfully returned by user " + id);
-            return true;
+        Iterator<Loan> iterator = borrowedBooks.iterator();
+        while (iterator.hasNext()) {
+            Loan loan = iterator.next();
+            if (loan.getBookId().equals(bookId)) {
+                iterator.remove();
+                System.out.println("Book " + bookId + " returned by user " + id);
+                return true;
+            }
         }
         System.out.println("Book " + bookId + " not found in borrowed list of user " + id);
         return false;
@@ -60,6 +64,19 @@ public abstract class User {
         System.out.println("Book " + bookId + " reserved by user " + id);
     }
 
+    public void addFine(double amount) {
+        finesDue += amount;
+    }
+
+    public double calculateTotalFine() {
+        double total = 0.0;
+        for (Loan loan : borrowedBooks) {
+            total += calculateFine(loan); // subclass-specific fine rules
+        }
+        return total;
+    }
+
+    // Getters
     public String getId() { return id; }
     public String getName() { return name; }
     public double getFinesDue() { return finesDue; }
